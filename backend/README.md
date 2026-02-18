@@ -31,7 +31,7 @@ docker network create docker-2-network
 ```bash
 docker run -d \
   --name docker-2-postgres \
-  --network docker-2-network \
+  --network todo-net\
   -e POSTGRES_PASSWORD=mysecret \
   -e POSTGRES_DB=todoapp \
   -p 5432:5432 \

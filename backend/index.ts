@@ -4,12 +4,17 @@ import type {CookieOptions, Request, Response} from "express";
 import jwt from "jsonwebtoken";
 import { middleware } from "./middleware";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 const prismaClient = new PrismaClient();
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser()); 
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+}))
 
 app.post("/signup", async (req:Request, res: Response) => {
     try{
@@ -41,7 +46,6 @@ app.post("/signup", async (req:Request, res: Response) => {
         console.log("error", error);
     }
 })
-
 
 app.post("/signin", async (req:Request, res: Response) => {
     try{
@@ -86,8 +90,8 @@ app.post("/signin", async (req:Request, res: Response) => {
         const option: CookieOptions = {
             expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
             httpOnly: true,
-            secure: true,
-            sameSite: "none",
+            secure: false,      
+            sameSite: "lax", 
         }
 
         return res.cookie("token", token, option).status(200).json({
@@ -98,7 +102,6 @@ app.post("/signin", async (req:Request, res: Response) => {
         console.log("error", error);
     }
 })
-
 
 app.post("/createTodo", middleware, async (req, res) => {
     try {
@@ -132,7 +135,6 @@ app.post("/createTodo", middleware, async (req, res) => {
         });
     }
 });
-
 
 app.get("/getAllTodos", middleware, async (req, res) => {
     try{
@@ -192,12 +194,8 @@ app.put("/updateTodo/:id", middleware, async (req, res) => {
     }
 });
 
-
-
-
 app.get("/test", (req, res) => {
     res.send("Test router")
 })
-
 
 app.listen(3000);

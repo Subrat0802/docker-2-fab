@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres
+    container_name: docker-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecret
+      POSTGRES_DB: todoapp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql  # 👈 removed /data at the end
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: todo-backend
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:mysecret@db:5432/todoapp?schema=public
+      JWT_SECRET: todoapp
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "bunx prisma db push && bun run index.ts"
+
+  frontend:
+    build: ./frontend
+    container_name: todo-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
